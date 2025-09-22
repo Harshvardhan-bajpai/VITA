@@ -31,7 +31,8 @@ The lanecam.py system can do this automatically by detecting sirens and emergenc
 Backend: Python, Flask
 Computer Vision: OpenCV, Ultralytics YOLOv8
 Data Processing & Scientific Computing: NumPy, SciPy
-
+Audio Processing: Sounddevice (for siren detection)
+Frontend: HTML, CSS, JavaScript
 
 # Project Structure
 The project is organized into two main components:
@@ -55,25 +56,22 @@ Smart Junction System
 This is a standalone script that simulates a multi-camera traffic intersection.
 
 1. Navigate to the smart junction system directory
-cd smart_junction_system
+   cd smart_junction_system
 
-2. Install the required libraries
-pip install -r requirements.txt
+3. Install the required libraries
+   pip install -r requirements.txt
 
-3. Run the script
-python lanecam.py
+5. Run the script
+   python lanecam.py
 
 Jam Solver Web App
 This runs a web server that displays the drone feed analysis.
 
 1. Navigate to the jam solver directory
-cd jam_solver_webapp
+   cd jam_solver_webapp
 
-2. Install the required libraries
-pip install -r requirements.txt
+3. Install the required libraries
+   pip install -r requirements.txt
 
-3. Run the Flask application
-python app.py
-Audio Processing: Sounddevice (for siren detection)
-
-Frontend: HTML, CSS, JavaScript
+5. Run the Flask application
+   python app.py
