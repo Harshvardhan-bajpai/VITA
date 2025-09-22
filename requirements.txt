@@ -1,5 +1,5 @@
-flask
 opencv-python
 ultralytics
 numpy
 scipy
+sounddevice
