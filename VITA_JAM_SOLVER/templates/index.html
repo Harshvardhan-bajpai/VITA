@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>VITA - Vehicle Intelligent Traffic Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body { 
+            display: flex; 
+            flex-direction: row; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #1a1a2e;
+            min-height: 100vh;
+            color: #ffffff;
+        }
+
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #16213e;
+            padding: 15px 30px;
+            border-bottom: 2px solid #0f3460;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: 2px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            background: #00ff88;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.mapping {
+            background: #ff9800;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .main-content {
+            margin-top: 80px;
+            display: flex;
+            width: 100%;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        #left { 
+            flex: 2; 
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .video-panel {
+            background: #16213e;
+            border: 2px solid #0f3460;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .panel-header {
+            color: #64b5f6;
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #0f3460;
+        }
+
+        #left img {
+            border: 2px solid #0f3460;
+            border-radius: 4px;
+            background: #000;
+            display: block;
+            margin: 0 auto;
+        }
+
+        #right { 
+            flex: 1; 
+            background: #16213e;
+            border: 2px solid #0f3460;
+            border-radius: 8px;
+            padding: 20px;
+            height: fit-content;
+        }
+
+        #analysis { 
+            border: 2px solid #0f3460;
+            height: 400px; 
+            overflow-y: auto; 
+            padding: 15px;
+            background: #0e1b2e;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #b0bec5;
+        }
+
+        #analysis::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #analysis::-webkit-scrollbar-track {
+            background: #0f3460;
+        }
+
+        #analysis::-webkit-scrollbar-thumb {
+            background: #64b5f6;
+            border-radius: 4px;
+        }
+
+        #analysis::-webkit-scrollbar-thumb:hover {
+            background: #42a5f5;
+        }
+
+        .control-section {
+            margin-bottom: 30px;
+        }
+
+        .control-section h3 {
+            color: #64b5f6;
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #0f3460;
+        }
+
+        #blockButton { 
+            margin: 8px 0; 
+            padding: 15px 25px; 
+            width: 100%;
+            border: 3px solid #f44336;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            background: #1a1a2e;
+            color: #f44336;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #blockButton:enabled:hover {
+            background: #f44336;
+            color: #ffffff;
+            box-shadow: 0 0 20px rgba(244, 67, 54, 0.4);
+            transform: translateY(-2px);
+        }
+
+        #blockButton:disabled {
+            border-color: #666;
+            color: #666;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        #blockButton:enabled:active {
+            transform: translateY(0);
+        }
+
+        .loading {
+            color: #64b5f6;
+            animation: blink 1.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes blink {
+            from { opacity: 0.5; }
+            to { opacity: 1; }
+        }
+
+        .analysis-item {
+            padding: 4px 0;
+            border-left: 3px solid transparent;
+            padding-left: 12px;
+            margin: 3px 0;
+            border-radius: 2px;
+        }
+
+        .analysis-item.high-priority {
+            border-left-color: #f44336;
+            background: rgba(244, 67, 54, 0.1);
+            color: #ffcdd2;
+        }
+
+        .analysis-item.medium-priority {
+            border-left-color: #ff9800;
+            background: rgba(255, 152, 0, 0.1);
+            color: #ffe0b2;
+        }
+
+        .analysis-item.low-priority {
+            border-left-color: #4caf50;
+            background: rgba(76, 175, 80, 0.1);
+            color: #c8e6c9;
+        }
+
+        .analysis-item.info {
+            border-left-color: #2196f3;
+            background: rgba(33, 150, 243, 0.1);
+            color: #bbdefb;
+        }
+
+        .analysis-item.space {
+            border-left-color: #9c27b0;
+            background: rgba(156, 39, 176, 0.1);
+            color: #e1bee7;
+        }
+
+        .mapping-progress {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 12px;
+            color: #ff9800;
+            display: none;
+        }
+
+        #blockButton:disabled .mapping-progress {
+            display: block;
+        }
+
+        /* Popup styles */
+        .popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .popup {
+            background: #16213e;
+            border: 3px solid #f44336;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(244, 67, 54, 0.3);
+            animation: popupAppear 0.3s ease-out;
+        }
+
+        @keyframes popupAppear {
+            from {
+                transform: scale(0.7);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .popup h2 {
+            color: #f44336;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .popup p {
+            color: #ffffff;
+            font-size: 16px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .popup button {
+            background: #f44336;
+            color: #ffffff;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.2s ease;
+        }
+
+        .popup button:hover {
+            background: #d32f2f;
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+                margin-top: 100px;
+            }
+            
+            #left img {
+                width: 100%;
+                max-width: 640px;
+                height: auto;
+            }
+            
+            .header h1 {
+                font-size: 18px;
+            }
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(15, 52, 96, 0.3) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(15, 52, 96, 0.3) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: -1;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>VITA - VEHICLE INTELLIGENT TRAFFIC ASSISTANT</h1>
+        <div class="status-indicator">
+            <div class="status-dot" id="statusDot"></div>
+            <span id="statusText">MAPPING IN PROGRESS</span>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div id="left">
+            <div class="video-panel">
+                <div class="panel-header">LIVE HEAT MAP - HIGHWAY 27 INTERSECTION</div>
+                <div class="video-container">
+                    <img src="{{ url_for('video_feed') }}">
+                </div>
+            </div>
+        </div>
+
+        <div id="right">
+            <div class="control-section">
+                <div class="panel-header">TRAFFIC ANALYSIS</div>
+                <div id="analysis">
+                    <div class="analysis-item info">Initializing heat map system...</div>
+                    <div class="analysis-item info">Connecting to drone feed...</div>
+                    <div class="analysis-item info">Loading YOLOv8n model...</div>
+                    <div class="analysis-item info">System warming up...</div>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>HIGHWAY CONTROL</h3>
+                <button id="blockButton" disabled onclick="blockHighway()">
+                    BLOCK HIGHWAY 27
+                    <div class="mapping-progress">MAPPING IN PROGRESS...</div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="popup-overlay" id="popupOverlay">
+        <div class="popup">
+            <h2>HIGHWAY BLOCKED</h2>
+            <p><strong>Highway 27 has been blocked!</strong><br><br>
+            All traffic is being rerouted to Highway 28.<br>
+            Emergency services have been notified.</p>
+            <button onclick="closePopup()">OK</button>
+        </div>
+    </div>
+
+    <script>
+        let mappingComplete = false;
+        let vehicleCount = 0;
+        
+        async function updateAnalysis() {
+            try {
+                const res = await fetch('/analysis');
+                const data = await res.text();
+                const analysisDiv = document.getElementById('analysis');
+                
+                if (data && data.trim() !== '') {
+                    const lines = data.split('<br>').filter(line => line.trim() !== '');
+                    
+                    let htmlContent = '';
+                    lines.forEach(line => {
+                        let className = 'info';
+                        
+                        if (line.includes('HIGH CONGESTION') || line.includes('EMERGENCY') || line.includes('PRIORITY')) {
+                            className = 'high-priority';
+                        } else if (line.includes('MEDIUM CONGESTION') || line.includes('Priority Vehicle')) {
+                            className = 'medium-priority';
+                        } else if (line.includes('LOW CONGESTION') || line.includes('OK') || line.includes('OPTIMAL')) {
+                            className = 'low-priority';
+                        } else if (line.includes('SPACE POCKETS') || line.includes('Space Pocket')) {
+                            className = 'space';
+                        }
+                        
+                        htmlContent += `<div class="analysis-item ${className}">${line}</div>`;
+                    });
+                    
+                    analysisDiv.innerHTML = htmlContent;
+                    
+                    if (lines.some(line => line.includes('vehicles') || line.includes('Vehicles')) && 
+                        lines.length > 3) {
+                        if (!mappingComplete) {
+                            mappingComplete = true;
+                            updateSystemStatus();
+                        }
+                    }
+                } else {
+                    analysisDiv.innerHTML = '<div class="analysis-item info">Waiting for traffic data...</div>';
+                }
+            } catch (error) {
+                console.log('Fetching analysis...');
+            }
+        }
+        
+        function updateSystemStatus() {
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            const blockButton = document.getElementById('blockButton');
+            
+            if (mappingComplete) {
+                statusDot.classList.remove('mapping');
+                statusText.textContent = 'MAPPING COMPLETE';
+                blockButton.disabled = false;
+            } else {
+                statusDot.classList.add('mapping');
+                statusText.textContent = 'MAPPING IN PROGRESS';
+                blockButton.disabled = true;
+            }
+        }
+        
+        function blockHighway() {
+            if (mappingComplete) {
+                const popupOverlay = document.getElementById('popupOverlay');
+                popupOverlay.style.display = 'flex';
+            }
+        }
+        
+        function closePopup() {
+            const popupOverlay = document.getElementById('popupOverlay');
+            popupOverlay.style.display = 'none';
+        }
+        
+        setInterval(updateAnalysis, 2000);
+        updateAnalysis();
+        
+        updateSystemStatus();
+    </script>
+</body>
+</html>
